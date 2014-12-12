@@ -1,3 +1,3 @@
 # remote
 
-an event driven remote communication framework. 
+message driven remote communication framework. 
