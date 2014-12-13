@@ -13,9 +13,11 @@ import org.remote.common.exception.RemoteCode;
 import org.remote.common.exception.RemoteException;
 import org.remote.common.protocol.ProtocolService;
 import org.remote.common.protocol.ProtocolSetting;
+import org.remote.common.service.ProcessorService;
 import org.remote.common.thread.NamedThreadFactory;
 import org.remote.netty.codecs.NettyProtocolDecoder;
 import org.remote.netty.codecs.NettyProtocolEncoder;
+import org.remote.netty.server.NettyConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,10 +32,8 @@ public class NettyClientFactory extends BaseClientFactory {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(NettyClientFactory.class);
     private final ClientBootstrap bootstrap;
-    private final ProtocolService protocolService;
 
-    public NettyClientFactory(ProtocolService protocolService) {
-        this.protocolService = protocolService;
+    public NettyClientFactory() {
         ThreadFactory master = new NamedThreadFactory("[REMOTE-CLIENT-MASTER]");
         ThreadFactory worker = new NamedThreadFactory("[REMOTE-CLIENT-WORKER]");
         bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(Executors.newCachedThreadPool(master),
@@ -54,7 +54,7 @@ public class NettyClientFactory extends BaseClientFactory {
     }
 
     @Override
-    public Client connect(SocketAddress address, int timeout) throws RemoteException {
+    public Client connect(SocketAddress address, int timeout, ProtocolService protocol, ProcessorService processor) throws RemoteException {
         ChannelFuture future = bootstrap.connect(address);
         future.awaitUninterruptibly(timeout);
         if (!future.isDone()) {
@@ -70,8 +70,8 @@ public class NettyClientFactory extends BaseClientFactory {
             LOGGER.error("[REMOTE] channel " + address + " not connected.");
             throw new RemoteException(RemoteCode.REMOTE_CLIENT_CONN_FAILED, "channel not connected.", future.getCause());
         }
-        NettyClient client = new NettyClient(future.getChannel(), protocolService);
+        NettyConnection connection = new NettyConnection(future.getChannel());
+        NettyClient client = new NettyClient(connection, protocol, processor);
         return client;
     }
-
 }

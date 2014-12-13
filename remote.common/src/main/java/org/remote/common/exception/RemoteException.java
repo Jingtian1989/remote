@@ -17,6 +17,10 @@ public class RemoteException extends Exception {
         this.code = code;
     }
 
+    public RemoteException(String s) {
+        super(s);
+    }
+
     public RemoteCode getCode() {
         return code;
     }

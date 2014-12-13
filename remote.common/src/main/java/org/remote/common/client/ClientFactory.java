@@ -1,5 +1,10 @@
 package org.remote.common.client;
 
+
+import org.remote.common.exception.RemoteException;
+import org.remote.common.protocol.ProtocolService;
+import org.remote.common.service.ProcessorService;
+
 import java.net.SocketAddress;
 
 /**
@@ -7,6 +12,8 @@ import java.net.SocketAddress;
  */
 public interface ClientFactory {
 
-    public Client get(SocketAddress address, boolean connect) throws Exception;
+    public Client build(SocketAddress address, ProtocolService protocol, ProcessorService processor) throws RemoteException;
+
+    public Client query(SocketAddress address) throws RemoteException;
 
 }

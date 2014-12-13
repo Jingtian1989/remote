@@ -1,9 +1,16 @@
 package org.remote.common.client;
 
+import org.remote.common.domain.BaseHeader;
 import org.remote.common.domain.BaseRequest;
 import org.remote.common.domain.BaseResponse;
+import org.remote.common.exception.RemoteException;
 import org.remote.common.protocol.ProtocolService;
+import org.remote.common.server.Connection;
+import org.remote.common.service.ProcessorService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -12,29 +19,55 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class BaseClient implements Client {
 
-    private final ConcurrentHashMap<Long, ClientCallBack> responses =
-            new ConcurrentHashMap<Long, ClientCallBack>();
-    private ProtocolService protocol;
+    private static final Logger LOGGER = LoggerFactory.getLogger(BaseClient.class);
 
-    public BaseClient(ProtocolService protocol) {
+    private Map<Long, ClientCallBack> responses;
+    private Connection connection;
+    private ProtocolService protocol;
+    private ProcessorService processor;
+
+
+    public BaseClient(Connection connection, ProtocolService protocol, ProcessorService processor) {
+        this.connection = connection;
         this.protocol = protocol;
+        this.processor = processor;
+        this.responses = new ConcurrentHashMap<Long, ClientCallBack>();
     }
 
     @Override
-    public Object syncInvoke(Object data) throws Exception {
+    public Object invoke(Object data) throws RemoteException {
         ClientCallBack callBack = new ClientCallBack();
-        BaseRequest request = protocol.request(data);
+        BaseRequest request = protocol.build(data);
         responses.put(request.getRequestID(), callBack);
         send(request);
         BaseResponse response = callBack.get(request.getTimeout(), TimeUnit.MILLISECONDS);
         return response.parse();
     }
 
-    public void complete(BaseResponse response){
+    public void receive(BaseHeader header){
+        if (header instanceof BaseRequest) {
+            handleRequest((BaseRequest) header);
+        } else if (header instanceof BaseResponse) {
+            handleResponse((BaseResponse) header);
+        } else {
+            LOGGER.error("[CONFIG] drop unknown message from " + getConnection().getRemoteAddress());
+        }
+    }
+
+    private void handleRequest(BaseRequest request) {
+        processor.handleRequest(request, getConnection());
+    }
+
+    private void handleResponse(BaseResponse response) {
         ClientCallBack callBack = responses.remove(response.getRequestID());
         if (callBack != null) {
             callBack.complete(response);
         }
     }
-    public abstract void send(BaseRequest request) throws Exception;
+
+    public Connection getConnection() {
+        return connection;
+    }
+
+    protected abstract void send(BaseHeader header) throws RemoteException;
 }

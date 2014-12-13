@@ -54,7 +54,7 @@ public class NettyServerHandler extends SimpleChannelUpstreamHandler {
                 BaseResponse response = request.error("thread pool is full.");
                 connection.write(response);
             } catch (NullPointerException e) {
-                LOGGER.error("[REMOTE] there is executable command in request " + connection.getRemoteAddress());
+                LOGGER.error("[REMOTE] there is executable command in build " + connection.getRemoteAddress());
                 BaseResponse response = request.error("no command.");
                 connection.write(response);
             }
@@ -80,12 +80,12 @@ public class NettyServerHandler extends SimpleChannelUpstreamHandler {
                 long pending = begin - dispatchTime;
                 int clientTimeout = request.getTimeout();
                 if (clientTimeout > 0 && pending >= clientTimeout) {
-                    LOGGER.error("[REMOTE] drop timeout client request from " + connection.getRemoteAddress() + " pending time " + pending);
+                    LOGGER.error("[REMOTE] drop timeout client build from " + connection.getRemoteAddress() + " pending time " + pending);
                     return;
                 }
                 service.handleRequest(request, connection);
             } catch (Exception e) {
-                LOGGER.error("[REMOTE] unexpected application exception when hanle the request. exception:", e);
+                LOGGER.error("[REMOTE] unexpected application exception when hanle the build. exception:", e);
                 BaseResponse response = request.error("unexpected application exception @" +
                         connection.getLocalAddress());
                 connection.write(response);

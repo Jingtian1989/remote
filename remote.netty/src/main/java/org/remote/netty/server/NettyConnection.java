@@ -3,6 +3,7 @@ package org.remote.netty.server;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
+import org.remote.common.domain.BaseHeader;
 import org.remote.common.domain.BaseResponse;
 import org.remote.common.server.Connection;
 import org.slf4j.Logger;
@@ -32,8 +33,8 @@ public class NettyConnection implements Connection {
     }
 
     @Override
-    public void write(BaseResponse response) {
-        ChannelFuture future = channel.write(response);
+    public void write(BaseHeader header) {
+        ChannelFuture future = channel.write(header);
         future.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
@@ -42,5 +43,9 @@ public class NettyConnection implements Connection {
                 }
             }
         });
+    }
+
+    public Channel getChannel() {
+        return channel;
     }
 }

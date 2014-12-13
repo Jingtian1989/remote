@@ -44,7 +44,4 @@ public class PacketRequest extends BaseRequest {
         protocol.encode(this, wrapper);
     }
 
-
-
-
 }

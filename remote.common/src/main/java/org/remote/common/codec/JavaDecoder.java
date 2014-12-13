@@ -1,5 +1,8 @@
 package org.remote.common.codec;
 
+import org.remote.common.exception.RemoteCode;
+import org.remote.common.exception.RemoteException;
+
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 
@@ -9,10 +12,14 @@ import java.io.ObjectInputStream;
 public class JavaDecoder implements Decoder {
 
     @Override
-    public Object decode(byte[] bytes) throws Exception {
-        ByteArrayInputStream array = new ByteArrayInputStream(bytes);
-        ObjectInputStream input = new ObjectInputStream(array);
-        Object object = input.readObject();
-        return object;
+    public Object decode(byte[] bytes) throws RemoteException {
+        try {
+            ByteArrayInputStream array = new ByteArrayInputStream(bytes);
+            ObjectInputStream input = new ObjectInputStream(array);
+            Object object = input.readObject();
+            return object;
+        } catch (Exception e) {
+            throw new RemoteException(RemoteCode.REMOTE_CODECS_DECODE_FAILED, "decode failed.", e);
+        }
     }
 }

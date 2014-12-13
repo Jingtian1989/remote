@@ -8,7 +8,7 @@ import org.remote.common.protocol.ProtocolSetting;
  */
 public class FastJsonDecoder implements Decoder {
     @Override
-    public Object decode(byte[] bytes) throws Exception {
+    public Object decode(byte[] bytes) {
         return JSON.parse(new String(bytes, ProtocolSetting.DEFAULT_CHARSET));
     }
 }

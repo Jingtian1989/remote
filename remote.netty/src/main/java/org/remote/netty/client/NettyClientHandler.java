@@ -5,6 +5,7 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.handler.timeout.IdleStateHandler;
 import org.jboss.netty.util.Timer;
+import org.remote.common.domain.BaseHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,15 +28,14 @@ public class NettyClientHandler extends IdleStateHandler{
 
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
-        if (e.getMessage() instanceof BaseResponse) {
-            BaseResponse response = (BaseResponse) e.getMessage();
-            NettyClient client = (NettyClient) factory.get(ctx.getChannel().getRemoteAddress(), false);
+        if (e.getMessage() instanceof BaseHeader) {
+            BaseHeader header = (BaseHeader) e.getMessage();
+            NettyClient client = (NettyClient) factory.query(ctx.getChannel().getRemoteAddress());
             if (client != null) {
-                client.complete(response);
+                client.receive(header);
             }
         } else {
             LOGGER.error("[REMOTE] unsupported message type from " + ctx.getChannel().getRemoteAddress());
-            throw new Exception("unsupported message type");
         }
     }
 

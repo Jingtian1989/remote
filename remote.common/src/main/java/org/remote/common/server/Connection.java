@@ -1,6 +1,6 @@
 package org.remote.common.server;
 
-import org.remote.common.domain.BaseResponse;
+import org.remote.common.domain.BaseHeader;
 
 import java.net.SocketAddress;
 
@@ -13,5 +13,5 @@ public interface Connection {
 
     public SocketAddress getRemoteAddress();
 
-    public void write(BaseResponse response);
+    public void write(BaseHeader header);
 }

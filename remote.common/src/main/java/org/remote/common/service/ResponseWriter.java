@@ -2,7 +2,6 @@ package org.remote.common.service;
 
 import org.remote.common.domain.BaseRequest;
 import org.remote.common.domain.BaseResponse;
-import org.remote.common.protocol.*;
 import org.remote.common.server.Connection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,8 +37,5 @@ public class ResponseWriter {
             BaseResponse response = request.error("build response failed.");
             connection.write(response);
         }
-
     }
-
-
 }
