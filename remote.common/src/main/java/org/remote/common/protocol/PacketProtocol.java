@@ -9,31 +9,41 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by jingtian.zjt on 2014/12/10.
  */
-
 /*
  * Packet codecs.
- * ÇëÇó£º
- * ×Ö½ÚÊı       ÃèÊö
- * 1           Ğ­Òé
- * 1           °æ±¾
- * 1           ÇëÇó
- * 1         ĞòÁĞ»¯·½Ê½
- * 8          ÇëÇóID
- * 4          ³¬Ê±Ê±¼ä
- * 4         Êı¾İ°ü³¤¶È
- * ²»µÈ        Êı¾İ°ü
+ * è¯·æ±‚ï¼š
+ * å­—èŠ‚æ•°       æè¿°
+ * 1           åè®®
+ * 1           ç‰ˆæœ¬
+ * 1           è¯·æ±‚
+ * 1         åºåˆ—åŒ–æ–¹å¼
+ * 8          è¯·æ±‚ID
+ * 4          è¶…æ—¶æ—¶é—´
+ * 4         æ•°æ®åŒ…é•¿åº¦
+ * ä¸ç­‰        æ•°æ®åŒ…
  *
- * ÏìÓ¦£º
- * ×Ö½ÚÊı      ÃèÊö
- * 1          Ğ­Òé
- * 1          °æ±¾
- * 1          ÏìÓ¦
- * 1        ĞòÁĞ»¯·½Ê½
- * 1        ×´Ì¬code
- * 3        ±£Áô×Ö½Ú
- * 8        ¶ÔÓ¦µÄÇëÇóID
- * 4        Êı¾İ°ü³¤¶È
- * ²»µÈ      Êı¾İ°ü
+ * å“åº”ï¼š
+ * å­—èŠ‚æ•°      æè¿°
+ * 1          åè®®
+ * 1          ç‰ˆæœ¬
+ * 1          å“åº”
+ * 1        åºåˆ—åŒ–æ–¹å¼
+ * 1        çŠ¶æ€code
+ * 3        ä¿ç•™å­—èŠ‚
+ * 8        å¯¹åº”çš„è¯·æ±‚ID
+ * 4        æ•°æ®åŒ…é•¿åº¦
+ * ä¸ç­‰      æ•°æ®åŒ…
+ *
+ *
+ * é€šç”¨ï¼š
+ * å­—èŠ‚æ•°      æè¿°
+ * 1          åè®®
+ * 1          ç‰ˆæœ¬
+ * 1          é€šç”¨
+ * 1         åºåˆ—åŒ–æ–¹å¼
+ * 8          æ¶ˆæ¯ID
+ * 4         æ•°æ®åŒ…é•¿åº¦
+ * ä¸ç­‰        æ•°æ®åŒ…
  */
 public class PacketProtocol implements Protocol{
 
@@ -43,20 +53,36 @@ public class PacketProtocol implements Protocol{
 
     private static final int REQUEST_HEADER_LEN = 16;
     private static final int RESPONSE_HEADER_LEN = 20;
+    private static final int COMMON_HEADER_LEN = 16;
 
     private static final byte VERSION = (byte)0x01;
     private static final byte REQUEST = (byte)0x00;
     private static final byte RESPONSE = (byte)0x01;
+    private static final byte COMMON = (byte)0x02;
 
     public void encode(BaseHeader message, ByteBufferWrapper wrapper) throws RuntimeException {
         if (message instanceof PacketRequest) {
             encodeRequest((PacketRequest)message, wrapper);
         } else if (message instanceof PacketResponse) {
-            encodeResponse((PacketResponse)message, wrapper);
+            encodeResponse((PacketResponse) message, wrapper);
+        } else if (message instanceof PacketCommon) {
+            encodeCommon((PacketCommon) message, wrapper);
         } else {
             LOGGER.error("[REMOTE] unsupported message type.");
             throw new RuntimeException("unsupported message type.");
         }
+    }
+
+    private void encodeCommon(PacketCommon common, ByteBufferWrapper wrapper) {
+        int capacity = COMMON_HEADER_LEN + common.getPacket().length;
+        wrapper.init(capacity);
+        wrapper.writeByte(PACKET_PROTOCOL);
+        wrapper.writeByte(VERSION);
+        wrapper.writeByte(COMMON);
+        wrapper.writeByte(common.getCodecType());
+        wrapper.writeLong(common.getMessageId());
+        wrapper.writeInt(common.getPacket().length);
+        wrapper.writeBytes(common.getPacket());
     }
 
     private void encodeRequest(PacketRequest request, ByteBufferWrapper wrapper) {
@@ -66,7 +92,7 @@ public class PacketProtocol implements Protocol{
         wrapper.writeByte(VERSION);
         wrapper.writeByte(REQUEST);
         wrapper.writeByte(request.getCodecType());
-        wrapper.writeLong(request.getRequestID());
+        wrapper.writeLong(request.getMessageId());
         wrapper.writeInt(request.getTimeout());
         wrapper.writeInt(request.getPacket().length);
         wrapper.writeBytes(request.getPacket());
@@ -83,7 +109,7 @@ public class PacketProtocol implements Protocol{
         wrapper.writeByte((byte)0);
         wrapper.writeByte((byte)0);
         wrapper.writeByte((byte)0);
-        wrapper.writeLong(response.getRequestID());
+        wrapper.writeLong(response.getMessageId());
         wrapper.writeInt(response.getPacket().length);
         wrapper.writeBytes(response.getPacket());
     }
@@ -91,7 +117,6 @@ public class PacketProtocol implements Protocol{
 
     public BaseHeader decode(ByteBufferWrapper wrapper, int origin) throws RuntimeException {
 
-        //Ğ£Ñé°æ±¾
         if (wrapper.readableBytes() < 2) {
             wrapper.setReaderIndex(origin);
             return null;
@@ -103,6 +128,8 @@ public class PacketProtocol implements Protocol{
                 return decodeRequest(wrapper, origin);
             } else if (type == RESPONSE) {
                 return decodeResponse(wrapper, origin);
+            } else if (type == COMMON) {
+                return decodeCommon(wrapper, origin);
             } else {
                 LOGGER.error("[REMOTE] message type " + type + " is not supported.");
                 throw new RuntimeException("message type " + type + " is not supported");
@@ -111,6 +138,23 @@ public class PacketProtocol implements Protocol{
             LOGGER.error("[REMOTE] unsupported codecs version " + version);
             throw new RuntimeException("codecs version " + version + "is not supported");
         }
+    }
+
+    private BaseHeader decodeCommon(ByteBufferWrapper wrapper, int origin) {
+        if (wrapper.readableBytes() < COMMON_HEADER_LEN - 3) {
+            wrapper.setReaderIndex(origin);
+            return null;
+        }
+        byte codecType = wrapper.readByte();
+        long commonId = wrapper.readLong();
+        int len = wrapper.readInt();
+        if (wrapper.readableBytes() < len) {
+            wrapper.setReaderIndex(origin);
+            return null;
+        }
+        byte[] body = new byte[len];
+        wrapper.readBytes(body);
+        return new PacketCommon(commonId, codecType, body);
     }
 
     public BaseHeader decodeRequest(ByteBufferWrapper wrapper, int origin) {

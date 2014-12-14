@@ -1,5 +1,6 @@
 package org.remote.common.protocol;
 
+import org.remote.common.domain.BaseHeader;
 import org.remote.common.domain.BaseRequest;
 import org.remote.common.domain.BaseResponse;
 import org.remote.common.exception.RemoteException;
@@ -9,6 +10,10 @@ import org.remote.common.exception.RemoteException;
  */
 public interface ProtocolService {
 
-    public BaseRequest build(Object data) throws RemoteException;
+    public BaseHeader buildCommon(Object data) throws RemoteException;
+
+    public BaseRequest buildRequest(Object data) throws RemoteException;
+
+    public BaseResponse buildResponse(BaseRequest request, Object data) throws RemoteException;
 
 }

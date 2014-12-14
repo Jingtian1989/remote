@@ -1,6 +1,7 @@
 package org.remote.common.domain;
 
 
+import org.remote.common.exception.RemoteException;
 
 /**
  * Created by jingtian.zjt on 2014/12/3.
@@ -19,8 +20,6 @@ public abstract class BaseRequest extends BaseHeader {
 
     public abstract BaseResponse error(String msg);
 
-    public abstract BaseResponse response(Object data) throws Exception;
-
-    public abstract Object parse() throws Exception;
+    public abstract Object parse() throws RemoteException;
 
 }

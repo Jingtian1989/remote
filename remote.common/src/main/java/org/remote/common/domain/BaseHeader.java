@@ -8,12 +8,12 @@ import org.remote.common.buffer.ByteBufferWrapper;
 public abstract class BaseHeader {
 
     private final int protocolType;
-    private final long requestID;
+    private final long messageId;
     private byte codecType;
 
-    public BaseHeader(int protocolType, long requestID, byte codecType) {
+    public BaseHeader(int protocolType, long messageId, byte codecType) {
         this.protocolType = protocolType;
-        this.requestID = requestID;
+        this.messageId = messageId;
         this.codecType = codecType;
     }
 
@@ -21,8 +21,8 @@ public abstract class BaseHeader {
         return protocolType;
     }
 
-    public long getRequestID() {
-        return requestID;
+    public long getMessageId() {
+        return messageId;
     }
 
     public abstract void encode(ByteBufferWrapper wrapper) throws Exception;

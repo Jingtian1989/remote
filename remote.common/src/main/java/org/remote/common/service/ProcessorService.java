@@ -1,8 +1,11 @@
 package org.remote.common.service;
 
 import org.remote.common.annotation.TargetType;
+import org.remote.common.domain.BaseCommon;
+import org.remote.common.domain.BaseHeader;
 import org.remote.common.domain.BaseRequest;
 import org.remote.common.domain.BaseResponse;
+import org.remote.common.exception.RemoteException;
 import org.remote.common.server.Connection;
 import org.remote.common.thread.NamedThreadFactory;
 import org.slf4j.Logger;
@@ -66,7 +69,7 @@ public class ProcessorService {
         Object data = null;
         try {
             data = request.parse();
-        } catch (Exception e){
+        } catch (RemoteException e){
             LOGGER.error("[REMOTE] parse request failed. exception:", e);
             BaseResponse response = request.error("parse request failed.");
             connection.write(response);
@@ -80,15 +83,31 @@ public class ProcessorService {
             return;
         }
         try {
-            processor.handleRequest(data, new ResponseWriter(connection, request));
+            processor.handle(data, new Writer(connection, request));
         } catch (Exception e) {
             LOGGER.error("[REMOTE] unexpected application exception occured. exception:", e);
             BaseResponse response = request.error("unexpected application exception");
             connection.write(response);
         }
-
     }
 
-
+    public void handleCommon(BaseCommon common, Connection connection) {
+        Object data = null;
+        try {
+            data = common.parse();
+        } catch (RemoteException e) {
+            LOGGER.error("[REMOTE] parse common failed. exception:", e);
+        }
+        Processor processor = getProcessor(data);
+        if (processor == null) {
+            LOGGER.error("[REMOTE] unsupported message type " + data.getClass() + " from " + connection.getRemoteAddress());
+            return;
+        }
+        try {
+            processor.handle(data, new Writer(connection, common));
+        } catch (Exception e) {
+            LOGGER.error("[REMOTE] unexpected application exception occured. exception:", e);
+        }
+    }
 
 }

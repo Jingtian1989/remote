@@ -1,5 +1,6 @@
 package org.remote.common.client;
 
+import org.remote.common.domain.BaseCommon;
 import org.remote.common.domain.BaseHeader;
 import org.remote.common.domain.BaseRequest;
 import org.remote.common.domain.BaseResponse;
@@ -37,11 +38,17 @@ public abstract class BaseClient implements Client {
     @Override
     public Object invoke(Object data) throws RemoteException {
         ClientCallBack callBack = new ClientCallBack();
-        BaseRequest request = protocol.build(data);
-        responses.put(request.getRequestID(), callBack);
+        BaseRequest request = protocol.buildRequest(data);
+        responses.put(request.getMessageId(), callBack);
         send(request);
         BaseResponse response = callBack.get(request.getTimeout(), TimeUnit.MILLISECONDS);
         return response.parse();
+    }
+
+    @Override
+    public void write(Object data) throws RemoteException {
+        BaseHeader request = protocol.buildCommon(data);
+        send(request);
     }
 
     public void receive(BaseHeader header){
@@ -49,9 +56,15 @@ public abstract class BaseClient implements Client {
             handleRequest((BaseRequest) header);
         } else if (header instanceof BaseResponse) {
             handleResponse((BaseResponse) header);
+        } else if (header instanceof BaseCommon) {
+            handleCommon((BaseCommon) header);
         } else {
             LOGGER.error("[CONFIG] drop unknown message from " + getConnection().getRemoteAddress());
         }
+    }
+
+    private void handleCommon(BaseCommon common) {
+        processor.handleCommon(common, getConnection());
     }
 
     private void handleRequest(BaseRequest request) {
@@ -59,15 +72,17 @@ public abstract class BaseClient implements Client {
     }
 
     private void handleResponse(BaseResponse response) {
-        ClientCallBack callBack = responses.remove(response.getRequestID());
+        ClientCallBack callBack = responses.remove(response.getMessageId());
         if (callBack != null) {
             callBack.complete(response);
         }
     }
 
+    private void send(BaseHeader header) throws RemoteException {
+        getConnection().write(header);
+    }
+
     public Connection getConnection() {
         return connection;
     }
-
-    protected abstract void send(BaseHeader header) throws RemoteException;
 }

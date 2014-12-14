@@ -9,7 +9,9 @@ import org.remote.common.server.Connection;
  */
 public interface Client {
 
-    public Object invoke(Object request) throws RemoteException;
+    public Object invoke(Object data) throws RemoteException;
+
+    public void write(Object data) throws RemoteException;
 
     public Connection getConnection();
 

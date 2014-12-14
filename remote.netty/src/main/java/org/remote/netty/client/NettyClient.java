@@ -1,7 +1,6 @@
 package org.remote.netty.client;
 
 import org.remote.common.client.BaseClient;
-import org.remote.common.domain.BaseHeader;
 import org.remote.common.protocol.ProtocolService;
 import org.remote.common.service.ProcessorService;
 import org.remote.netty.server.NettyConnection;
@@ -13,10 +12,5 @@ public class NettyClient extends BaseClient {
 
     public NettyClient(NettyConnection connection, ProtocolService protocol, ProcessorService processor) {
         super(connection, protocol, processor);
-    }
-
-    @Override
-    public void send(BaseHeader header) {
-        getConnection().write(header);
     }
 }
