@@ -45,7 +45,13 @@ public class NettyConnection implements Connection {
         });
     }
 
+    @Override
+    public boolean isConnected() {
+        return channel.isConnected();
+    }
+
     public Channel getChannel() {
         return channel;
     }
+
 }

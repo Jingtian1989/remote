@@ -35,7 +35,7 @@ public abstract class BaseClientFactory implements ClientFactory{
         InetSocketAddress address = new InetSocketAddress(host, port);
         Client client = clients.get(address);
         if (client != null) {
-            throw new RemoteException("[CONFIG] existed getConnection to " + address);
+            throw new RemoteException("[CONFIG] existed connection to " + address);
         }
         client = connect(address, ProtocolSetting.DEFAULT_TIMEOUT, protocol, processor);
         clients.put(address, client);

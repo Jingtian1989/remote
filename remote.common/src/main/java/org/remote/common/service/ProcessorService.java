@@ -2,7 +2,6 @@ package org.remote.common.service;
 
 import org.remote.common.annotation.TargetType;
 import org.remote.common.domain.BaseCommon;
-import org.remote.common.domain.BaseHeader;
 import org.remote.common.domain.BaseRequest;
 import org.remote.common.domain.BaseResponse;
 import org.remote.common.exception.RemoteException;

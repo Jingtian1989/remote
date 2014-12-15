@@ -14,4 +14,6 @@ public interface Connection {
     public SocketAddress getRemoteAddress();
 
     public void write(BaseHeader header);
+
+    public boolean isConnected();
 }

@@ -11,8 +11,10 @@ public interface Client {
 
     public Object invoke(Object data) throws RemoteException;
 
+    public void invoke(Object data, ClientCallBack callBack) throws RemoteException;
+
     public void write(Object data) throws RemoteException;
 
-    public Connection getConnection();
+    public Connection connection();
 
 }
