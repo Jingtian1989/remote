@@ -1,10 +1,10 @@
 package org.remote.common.service;
 
 import org.remote.common.domain.BaseHeader;
+import org.remote.common.client.CallBack;
 import org.remote.common.domain.BaseRequest;
 import org.remote.common.domain.BaseResponse;
 import org.remote.common.exception.RemoteException;
-import org.remote.common.protocol.ProtocolFactory;
 import org.remote.common.protocol.ProtocolService;
 import org.remote.common.server.Connection;
 
@@ -15,30 +15,28 @@ public class Writer {
 
     private ProtocolService protocol;
     private Connection connection;
-    private BaseHeader header;
+    private BaseRequest request;
 
-    public Writer(Connection connection, BaseHeader header) {
-        this.protocol = ProtocolFactory.getInstance().getProtocolService(header.getProtocolType());
+    public Writer(Connection connection, ProtocolService protocol, BaseRequest request) {
+        this.protocol = protocol;
         this.connection = connection;
-        this.header = header;
+        this.request = request;
     }
 
-    public void response(Object data) throws RemoteException {
-        BaseResponse response = protocol.buildResponse((BaseRequest)header, data);
-        connection.write(response);
-    }
-
-    public void request(Object data) throws RemoteException {
-        BaseRequest request = protocol.buildRequest(data);
+    public void request(Object data, CallBack callBack) throws RemoteException {
+        BaseHeader request = protocol.buildRequest(data);
+        connection.setCallBack(callBack);
         connection.write(request);
     }
 
-    public void write(Object data) throws RemoteException {
-        BaseHeader common = protocol.buildCommon(data);
-        connection.write(common);
+    public void response(Object data) throws RemoteException {
+        BaseResponse response = protocol.buildResponse(request, data);
+        connection.write(response);
     }
 
-    public Connection connection() {
+
+
+    public Connection getConnection() {
         return connection;
     }
 }

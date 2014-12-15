@@ -5,7 +5,7 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.DefaultChannelPipeline;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
-import org.remote.common.service.ProcessorService;
+import org.remote.common.service.ProcessorRegistrar;
 import org.remote.common.thread.NamedThreadFactory;
 import org.remote.common.server.Server;
 import org.remote.netty.codecs.NettyProtocolDecoder;
@@ -24,9 +24,9 @@ public class NettyServer extends Server {
     private final NettyServerHandler handler;
     private final AtomicBoolean started = new AtomicBoolean(false);
 
-    public NettyServer(String host, int port, ProcessorService processor) {
-        super(host, port);
-        handler = new NettyServerHandler(processor);
+    public NettyServer(String host, int port, ProcessorRegistrar registrar) {
+        super(host, port, registrar);
+        handler = new NettyServerHandler(registrar);
         java.util.concurrent.ThreadFactory master = new NamedThreadFactory("[REMOTE-SERVER-MASTER]");
         java.util.concurrent.ThreadFactory worker = new NamedThreadFactory("[REMOTE-SERVER-WORKER]");
         bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(Executors.newCachedThreadPool(master),

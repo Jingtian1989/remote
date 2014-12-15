@@ -24,7 +24,7 @@ public class HelloWorldProcessor implements Processor {
 
         try {
             GoodbyePacket hello = new GoodbyePacket();
-            writer.write(hello);
+            writer.request(hello, null);
         } catch (RemoteException e) {
             e.printStackTrace();
         }

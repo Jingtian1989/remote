@@ -1,16 +1,12 @@
 package org.remote.common.client;
 
-import org.remote.common.domain.BaseCommon;
-import org.remote.common.domain.BaseHeader;
 import org.remote.common.domain.BaseRequest;
 import org.remote.common.domain.BaseResponse;
 import org.remote.common.exception.RemoteCode;
 import org.remote.common.exception.RemoteException;
 import org.remote.common.protocol.ProtocolService;
 import org.remote.common.server.Connection;
-import org.remote.common.service.ProcessorService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.remote.common.service.ProcessorRegistrar;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,92 +19,59 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class BaseClient implements Client {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BaseClient.class);
-
-    private Map<Long, ClientTimer> responses;
     private Connection connection;
     private ProtocolService protocol;
-    private ProcessorService processor;
+    private ProcessorRegistrar registrar;
 
-
-    public BaseClient(Connection connection, ProtocolService protocol, ProcessorService processor) {
+    public BaseClient(Connection connection, ProtocolService protocol, ProcessorRegistrar registrar) {
         this.connection = connection;
         this.protocol = protocol;
-        this.processor = processor;
-        this.responses = new ConcurrentHashMap<Long, ClientTimer>();
+        this.registrar = registrar;
+    }
+
+    @Override
+    public void invoke(Object data, CallBack callBack) throws RemoteException {
+        BaseRequest request = protocol.buildRequest(data);
+        connection.setCallBack(callBack);
+        connection.write(request);
     }
 
     @Override
     public Object invoke(Object data) throws RemoteException {
         ClientTimer timer = new ClientTimer();
+        ClientCallBack clientCallBack = new ClientCallBack(timer);
+        connection.setCallBack(clientCallBack);
         BaseRequest request = protocol.buildRequest(data);
-        responses.put(request.getMessageId(), timer);
-        send(request);
-        BaseResponse response = (BaseResponse) timer.get(request.getTimeout(), TimeUnit.MILLISECONDS);
-        return response.parse();
+        connection.write(request);
+        return timer.get(request.getTimeout(), TimeUnit.MILLISECONDS);
     }
 
-
-    @Override
-    public void invoke(Object data, final ClientCallBack callBack) throws RemoteException {
-        final ClientTimer timer = new ClientTimer();
-        final BaseRequest request = protocol.buildRequest(data);
-        Executor executor = processor.getExecutor(request);
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    BaseResponse response = (BaseResponse)timer.get(request.getTimeout(), TimeUnit.MILLISECONDS);
-                    Object data = response.parse();
-                    callBack.handle(data);
-                } catch (RemoteException e) {
-                    callBack.exception(e);
-                }
-            }
-        });
+    public ProcessorRegistrar getRegistrar() {
+        return registrar;
     }
 
-
-    @Override
-    public void write(Object data) throws RemoteException {
-        BaseHeader request = protocol.buildCommon(data);
-        send(request);
-    }
-
-    public void receive(BaseHeader header){
-        if (header instanceof BaseRequest) {
-            handleRequest((BaseRequest) header);
-        } else if (header instanceof BaseResponse) {
-            handleResponse((BaseResponse) header);
-        } else if (header instanceof BaseCommon) {
-            handleCommon((BaseCommon) header);
-        } else {
-            LOGGER.error("[CONFIG] drop unknown message from " + connection().getRemoteAddress());
-        }
-    }
-
-    private void handleCommon(BaseCommon common) {
-        processor.handleCommon(common, connection());
-    }
-
-    private void handleRequest(BaseRequest request) {
-        processor.handleRequest(request, connection());
-    }
-
-    private void handleResponse(BaseResponse response) {
-        ClientTimer timer = responses.remove(response.getMessageId());
-        if (timer != null) {
-            timer.arrive(response);
-        }
-    }
-
-    private void send(BaseHeader header) throws RemoteException {
-        connection().write(header);
-    }
-
-    public Connection connection() {
+    public Connection getConnection() {
         return connection;
     }
+
+    private static class ClientCallBack implements CallBack {
+
+        private ClientTimer timer;
+
+        public ClientCallBack(ClientTimer timer) {
+            this.timer = timer;
+        }
+
+        @Override
+        public void handleResponse(Object data) {
+            timer.arrive(data);
+        }
+
+        @Override
+        public void handleException(RemoteException e) {
+        }
+    }
+
 
     private static class ClientTimer {
 

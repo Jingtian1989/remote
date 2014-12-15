@@ -13,7 +13,7 @@ import org.remote.common.exception.RemoteCode;
 import org.remote.common.exception.RemoteException;
 import org.remote.common.protocol.ProtocolService;
 import org.remote.common.protocol.ProtocolSetting;
-import org.remote.common.service.ProcessorService;
+import org.remote.common.service.ProcessorRegistrar;
 import org.remote.common.thread.NamedThreadFactory;
 import org.remote.netty.codecs.NettyProtocolDecoder;
 import org.remote.netty.codecs.NettyProtocolEncoder;
@@ -54,7 +54,7 @@ public class NettyClientFactory extends BaseClientFactory {
     }
 
     @Override
-    public Client connect(SocketAddress address, int timeout, ProtocolService protocol, ProcessorService processor) throws RemoteException {
+    public Client connect(SocketAddress address, int timeout, ProtocolService protocol, ProcessorRegistrar registrar) throws RemoteException {
         ChannelFuture future = bootstrap.connect(address);
         future.awaitUninterruptibly(timeout);
         if (!future.isDone()) {
@@ -71,7 +71,7 @@ public class NettyClientFactory extends BaseClientFactory {
             throw new RemoteException(RemoteCode.REMOTE_CLIENT_CONN_FAILED, "channel not connected.", future.getCause());
         }
         NettyConnection connection = new NettyConnection(future.getChannel());
-        NettyClient client = new NettyClient(connection, protocol, processor);
+        NettyClient client = new NettyClient(connection, protocol, registrar);
         return client;
     }
 }

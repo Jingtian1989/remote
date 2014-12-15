@@ -2,7 +2,6 @@ package org.remote.common.protocol;
 
 import org.remote.common.util.UUIDGenerator;
 import org.remote.common.codec.Codecs;
-import org.remote.common.domain.BaseHeader;
 import org.remote.common.domain.BaseRequest;
 import org.remote.common.domain.BaseResponse;
 import org.remote.common.exception.RemoteException;
@@ -13,11 +12,6 @@ import org.remote.common.exception.RemoteException;
  */
 public class PacketService implements ProtocolService{
 
-    @Override
-    public BaseHeader buildCommon(Object data) throws RemoteException {
-        byte[] packet = Codecs.getEncoder(ProtocolSetting.DEFAULT_CODECS).encode(data);
-        return new PacketCommon(UUIDGenerator.get(), (byte)ProtocolSetting.DEFAULT_CODECS, packet);
-    }
 
     @Override
     public BaseRequest buildRequest(Object data) throws RemoteException{

@@ -35,15 +35,6 @@ import org.slf4j.LoggerFactory;
  * 不等      数据包
  *
  *
- * 通用：
- * 字节数      描述
- * 1          协议
- * 1          版本
- * 1          通用
- * 1         序列化方式
- * 8          消息ID
- * 4         数据包长度
- * 不等        数据包
  */
 public class PacketProtocol implements Protocol{
 
@@ -53,36 +44,20 @@ public class PacketProtocol implements Protocol{
 
     private static final int REQUEST_HEADER_LEN = 16;
     private static final int RESPONSE_HEADER_LEN = 20;
-    private static final int COMMON_HEADER_LEN = 16;
 
     private static final byte VERSION = (byte)0x01;
     private static final byte REQUEST = (byte)0x00;
     private static final byte RESPONSE = (byte)0x01;
-    private static final byte COMMON = (byte)0x02;
 
     public void encode(BaseHeader message, ByteBufferWrapper wrapper) throws RuntimeException {
         if (message instanceof PacketRequest) {
             encodeRequest((PacketRequest)message, wrapper);
         } else if (message instanceof PacketResponse) {
             encodeResponse((PacketResponse) message, wrapper);
-        } else if (message instanceof PacketCommon) {
-            encodeCommon((PacketCommon) message, wrapper);
         } else {
             LOGGER.error("[REMOTE] unsupported message type.");
             throw new RuntimeException("unsupported message type.");
         }
-    }
-
-    private void encodeCommon(PacketCommon common, ByteBufferWrapper wrapper) {
-        int capacity = COMMON_HEADER_LEN + common.getPacket().length;
-        wrapper.init(capacity);
-        wrapper.writeByte(PACKET_PROTOCOL);
-        wrapper.writeByte(VERSION);
-        wrapper.writeByte(COMMON);
-        wrapper.writeByte(common.getCodecType());
-        wrapper.writeLong(common.getMessageId());
-        wrapper.writeInt(common.getPacket().length);
-        wrapper.writeBytes(common.getPacket());
     }
 
     private void encodeRequest(PacketRequest request, ByteBufferWrapper wrapper) {
@@ -128,8 +103,6 @@ public class PacketProtocol implements Protocol{
                 return decodeRequest(wrapper, origin);
             } else if (type == RESPONSE) {
                 return decodeResponse(wrapper, origin);
-            } else if (type == COMMON) {
-                return decodeCommon(wrapper, origin);
             } else {
                 LOGGER.error("[REMOTE] message type " + type + " is not supported.");
                 throw new RuntimeException("message type " + type + " is not supported");
@@ -140,22 +113,7 @@ public class PacketProtocol implements Protocol{
         }
     }
 
-    private BaseHeader decodeCommon(ByteBufferWrapper wrapper, int origin) {
-        if (wrapper.readableBytes() < COMMON_HEADER_LEN - 3) {
-            wrapper.setReaderIndex(origin);
-            return null;
-        }
-        byte codecType = wrapper.readByte();
-        long commonId = wrapper.readLong();
-        int len = wrapper.readInt();
-        if (wrapper.readableBytes() < len) {
-            wrapper.setReaderIndex(origin);
-            return null;
-        }
-        byte[] body = new byte[len];
-        wrapper.readBytes(body);
-        return new PacketCommon(commonId, codecType, body);
-    }
+
 
     public BaseHeader decodeRequest(ByteBufferWrapper wrapper, int origin) {
         if (wrapper.readableBytes() < REQUEST_HEADER_LEN - 3) {

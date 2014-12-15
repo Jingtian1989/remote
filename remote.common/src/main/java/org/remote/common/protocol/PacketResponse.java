@@ -29,7 +29,7 @@ public class PacketResponse extends BaseResponse{
     }
 
     @Override
-    public void encode(ByteBufferWrapper wrapper) throws Exception {
+    public void encode(ByteBufferWrapper wrapper) throws RemoteException {
         protocol.encode(this, wrapper);
     }
 
