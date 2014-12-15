@@ -1,22 +1,16 @@
 package org.remote.netty.client;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.handler.timeout.IdleStateHandler;
 import org.jboss.netty.util.Timer;
-import org.remote.common.client.CallBack;
 import org.remote.common.client.Client;
 import org.remote.common.domain.BaseHeader;
 import org.remote.common.domain.BaseRequest;
-import org.remote.common.exception.RemoteException;
-import org.remote.common.server.Connection;
 import org.remote.common.service.ProcessorRegistrar;
 import org.remote.netty.handler.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.ConnectException;
 
 import org.remote.common.domain.BaseResponse;
 

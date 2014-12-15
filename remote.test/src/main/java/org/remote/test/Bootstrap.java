@@ -1,6 +1,6 @@
 package org.remote.test;
 
-import org.remote.common.client.CallBack;
+import org.remote.common.client.ClientCallBack;
 import org.remote.common.client.Client;
 import org.remote.common.client.ClientFactory;
 import org.remote.common.exception.RemoteException;
@@ -36,7 +36,7 @@ public class Bootstrap {
         }
     }
 
-    public static class HelloWorldCallBack implements CallBack {
+    public static class HelloWorldCallBack implements ClientCallBack {
 
         @Override
         public void handleResponse(Object data) {

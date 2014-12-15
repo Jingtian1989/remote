@@ -3,9 +3,8 @@ package org.remote.netty.server;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
-import org.remote.common.client.CallBack;
+import org.remote.common.client.ClientCallBack;
 import org.remote.common.domain.BaseHeader;
-import org.remote.common.domain.BaseResponse;
 import org.remote.common.server.Connection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +18,7 @@ public class NettyConnection implements Connection {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NettyConnection.class);
     private Channel channel;
-    private CallBack callBack;
+    private ClientCallBack callBack;
 
     public NettyConnection(Channel channel) {
         this.channel = channel;
@@ -54,12 +53,12 @@ public class NettyConnection implements Connection {
     }
 
     @Override
-    public void setCallBack(CallBack callBack) {
+    public void setCallBack(ClientCallBack callBack) {
         this.callBack = callBack;
     }
 
     @Override
-    public CallBack getCallBack() {
+    public ClientCallBack getCallBack() {
         return callBack;
     }
 

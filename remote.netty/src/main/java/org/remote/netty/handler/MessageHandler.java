@@ -1,6 +1,6 @@
 package org.remote.netty.handler;
 
-import org.remote.common.client.CallBack;
+import org.remote.common.client.ClientCallBack;
 import org.remote.common.domain.BaseHeader;
 import org.remote.common.domain.BaseRequest;
 import org.remote.common.domain.BaseResponse;
@@ -59,7 +59,7 @@ public class MessageHandler implements Runnable {
             return;
         }
         try {
-            CallBack callBack = connection.getCallBack();
+            ClientCallBack callBack = connection.getCallBack();
             if (callBack != null) {
                 callBack.handleResponse(data);
             }

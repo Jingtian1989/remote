@@ -10,7 +10,7 @@ import org.remote.common.service.ProcessorRegistrar;
  */
 public interface Client {
 
-    public void invoke(Object data, CallBack callBack) throws RemoteException;
+    public void invoke(Object data, ClientCallBack callBack) throws RemoteException;
 
     public Object invoke(Object data) throws RemoteException;
 

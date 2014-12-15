@@ -1,6 +1,6 @@
 package org.remote.common.server;
 
-import org.remote.common.client.CallBack;
+import org.remote.common.client.ClientCallBack;
 import org.remote.common.domain.BaseHeader;
 
 import java.net.SocketAddress;
@@ -18,7 +18,7 @@ public interface Connection {
 
     public boolean isConnected();
 
-    public void setCallBack(CallBack callBack);
+    public void setCallBack(ClientCallBack callBack);
 
-    public CallBack getCallBack();
+    public ClientCallBack getCallBack();
 }

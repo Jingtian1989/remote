@@ -5,7 +5,7 @@ import org.remote.common.exception.RemoteException;
 /**
  * Created by jingtian.zjt on 2014/12/11.
  */
-public interface CallBack {
+public interface ClientCallBack {
 
     public void handleResponse(Object data);
 

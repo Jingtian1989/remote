@@ -1,7 +1,7 @@
 package org.remote.common.service;
 
+import org.remote.common.client.ClientCallBack;
 import org.remote.common.domain.BaseHeader;
-import org.remote.common.client.CallBack;
 import org.remote.common.domain.BaseRequest;
 import org.remote.common.domain.BaseResponse;
 import org.remote.common.exception.RemoteException;
@@ -23,7 +23,7 @@ public class Writer {
         this.request = request;
     }
 
-    public void request(Object data, CallBack callBack) throws RemoteException {
+    public void request(Object data, ClientCallBack callBack) throws RemoteException {
         BaseHeader request = protocol.buildRequest(data);
         connection.setCallBack(callBack);
         connection.write(request);
@@ -33,8 +33,6 @@ public class Writer {
         BaseResponse response = protocol.buildResponse(request, data);
         connection.write(response);
     }
-
-
 
     public Connection getConnection() {
         return connection;

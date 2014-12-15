@@ -1,17 +1,13 @@
 package org.remote.common.client;
 
 import org.remote.common.domain.BaseRequest;
-import org.remote.common.domain.BaseResponse;
 import org.remote.common.exception.RemoteCode;
 import org.remote.common.exception.RemoteException;
 import org.remote.common.protocol.ProtocolService;
 import org.remote.common.server.Connection;
 import org.remote.common.service.ProcessorRegistrar;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -30,7 +26,7 @@ public abstract class BaseClient implements Client {
     }
 
     @Override
-    public void invoke(Object data, CallBack callBack) throws RemoteException {
+    public void invoke(Object data, org.remote.common.client.ClientCallBack callBack) throws RemoteException {
         BaseRequest request = protocol.buildRequest(data);
         connection.setCallBack(callBack);
         connection.write(request);
@@ -39,8 +35,8 @@ public abstract class BaseClient implements Client {
     @Override
     public Object invoke(Object data) throws RemoteException {
         ClientTimer timer = new ClientTimer();
-        ClientCallBack clientCallBack = new ClientCallBack(timer);
-        connection.setCallBack(clientCallBack);
+        SynCallBack synCallBack = new SynCallBack(timer);
+        connection.setCallBack(synCallBack);
         BaseRequest request = protocol.buildRequest(data);
         connection.write(request);
         return timer.get(request.getTimeout(), TimeUnit.MILLISECONDS);
@@ -54,11 +50,11 @@ public abstract class BaseClient implements Client {
         return connection;
     }
 
-    private static class ClientCallBack implements CallBack {
+    private static class SynCallBack implements org.remote.common.client.ClientCallBack {
 
         private ClientTimer timer;
 
-        public ClientCallBack(ClientTimer timer) {
+        public SynCallBack(ClientTimer timer) {
             this.timer = timer;
         }
 
