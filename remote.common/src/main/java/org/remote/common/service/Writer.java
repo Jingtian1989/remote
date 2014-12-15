@@ -37,4 +37,8 @@ public class Writer {
         BaseHeader common = protocol.buildCommon(data);
         connection.write(common);
     }
+
+    public Connection connection() {
+        return connection;
+    }
 }

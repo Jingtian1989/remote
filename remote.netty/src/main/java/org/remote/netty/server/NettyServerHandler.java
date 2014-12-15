@@ -1,8 +1,6 @@
 package org.remote.netty.server;
 
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
+import org.jboss.netty.channel.*;
 import org.remote.common.domain.BaseRequest;
 import org.remote.common.domain.BaseResponse;
 import org.remote.common.server.Connection;
@@ -10,6 +8,7 @@ import org.remote.common.service.ProcessorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 
 /**
@@ -18,9 +17,25 @@ import java.util.concurrent.RejectedExecutionException;
 public class NettyServerHandler extends SimpleChannelUpstreamHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NettyServerHandler.class);
+
+    private ConcurrentHashMap<Channel, NettyConnection> connections;
     private ProcessorService processor;
+
     public NettyServerHandler(ProcessorService processor) {
         this.processor = processor;
+        this.connections = new ConcurrentHashMap<Channel, NettyConnection>();
+    }
+
+    @Override
+    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+        connections.put(e.getChannel(), new NettyConnection(e.getChannel()));
+        super.channelConnected(ctx, e);
+    }
+
+    @Override
+    public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+        connections.remove(ctx.getChannel());
+        super.channelDisconnected(ctx, e);
     }
 
     @Override
@@ -35,7 +50,7 @@ public class NettyServerHandler extends SimpleChannelUpstreamHandler {
 
 
     private void handleRequest(final ChannelHandlerContext ctx, final Object message) {
-        final Connection connection = new NettyConnection(ctx.getChannel());
+        Connection connection = connections.get(ctx.getChannel());
         BaseRequest request = (BaseRequest)message;
         if (processor.getExecutor(request) == null) {
             try {
