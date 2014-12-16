@@ -10,6 +10,7 @@ import org.remote.netty.handler.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.ConnectException;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -48,6 +49,13 @@ public class NettyServerHandler extends SimpleChannelUpstreamHandler {
             return;
         }
         handleMessage(ctx, message);
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
+        if (e.getCause() instanceof ConnectException) {
+            return;
+        }
     }
 
     private void handleMessage(final ChannelHandlerContext ctx, final Object message) {

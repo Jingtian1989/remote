@@ -19,4 +19,6 @@ public interface ClientFactory {
 
     public Client query(SocketAddress address);
 
+    public Client remove(SocketAddress address);
+
 }
