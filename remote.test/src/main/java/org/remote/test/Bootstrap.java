@@ -3,7 +3,6 @@ package org.remote.test;
 import org.remote.common.client.ClientCallBack;
 import org.remote.common.client.Client;
 import org.remote.common.client.ClientFactory;
-import org.remote.common.exception.RemoteException;
 import org.remote.common.service.ProcessorRegistrar;
 import org.remote.netty.client.NettyClientFactory;
 import org.remote.netty.server.NettyServer;
@@ -44,7 +43,7 @@ public class Bootstrap {
         }
 
         @Override
-        public void handleException(RemoteException e) {
+        public void handleException(Exception e) {
             e.printStackTrace();
         }
     }

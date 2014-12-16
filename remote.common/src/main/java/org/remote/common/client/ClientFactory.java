@@ -1,10 +1,10 @@
 package org.remote.common.client;
 
 
-import org.remote.common.exception.RemoteException;
 import org.remote.common.protocol.ProtocolService;
 import org.remote.common.service.ProcessorRegistrar;
 
+import java.net.ConnectException;
 import java.net.SocketAddress;
 
 
@@ -13,10 +13,10 @@ import java.net.SocketAddress;
  */
 public interface ClientFactory {
 
-    public Client build(String host, int port, ProcessorRegistrar registrar) throws RemoteException;
+    public Client build(String host, int port, ProcessorRegistrar registrar) throws ConnectException;
 
-    public Client build(String host, int port, ProtocolService protocol, ProcessorRegistrar registrar) throws RemoteException;
+    public Client build(String host, int port, ProtocolService protocol, ProcessorRegistrar registrar) throws ConnectException;
 
-    public Client query(SocketAddress address) throws RemoteException;
+    public Client query(SocketAddress address);
 
 }

@@ -1,14 +1,14 @@
 package org.remote.common.client;
 
 import org.remote.common.domain.BaseRequest;
-import org.remote.common.exception.RemoteCode;
-import org.remote.common.exception.RemoteException;
+import org.remote.common.exception.CodecsException;
 import org.remote.common.protocol.ProtocolService;
 import org.remote.common.server.Connection;
 import org.remote.common.service.ProcessorRegistrar;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Created by jingtian.zjt on 2014/12/11.
@@ -26,14 +26,18 @@ public abstract class BaseClient implements Client {
     }
 
     @Override
-    public void invoke(Object data, org.remote.common.client.ClientCallBack callBack) throws RemoteException {
-        BaseRequest request = protocol.buildRequest(data);
-        connection.setCallBack(callBack);
-        connection.write(request);
+    public void invoke(Object data, ClientCallBack callBack){
+        try {
+            BaseRequest request = protocol.buildRequest(data);
+            connection.setCallBack(callBack);
+            connection.write(request);
+        } catch (Exception e) {
+            callBack.handleException(e);
+        }
     }
 
     @Override
-    public Object invoke(Object data) throws RemoteException {
+    public Object invoke(Object data) throws CodecsException, InterruptedException, TimeoutException {
         ClientTimer timer = new ClientTimer();
         SynCallBack synCallBack = new SynCallBack(timer);
         connection.setCallBack(synCallBack);
@@ -64,7 +68,7 @@ public abstract class BaseClient implements Client {
         }
 
         @Override
-        public void handleException(RemoteException e) {
+        public void handleException(Exception e) {
         }
     }
 
@@ -77,13 +81,9 @@ public abstract class BaseClient implements Client {
             this.latch = new CountDownLatch(1);
         }
 
-        public Object get(long timeout, TimeUnit unit) throws RemoteException{
-            try {
-                if (!latch.await(timeout, unit)) {
-                    throw new RemoteException(RemoteCode.REMOTE_CLIENT_CONN_TIMEOUT, "request timeout.");
-                }
-            } catch (InterruptedException e) {
-                throw new RemoteException(RemoteCode.REMOTE_CLIENT_CONN_FAILED, "request interrupted.");
+        public Object get(long timeout, TimeUnit unit) throws TimeoutException, InterruptedException{
+            if (!latch.await(timeout, unit)) {
+                throw new TimeoutException();
             }
             return data;
         }

@@ -12,7 +12,7 @@ import org.remote.common.service.Writer;
 public class GoodbyeProcessor implements Processor {
 
     @Override
-    public void handle(Object data, Writer writer) {
+    public void handleMessage(Object data, Writer writer) {
         GoodbyePacket packet = (GoodbyePacket) data;
         System.out.println(packet.getValue());
     }

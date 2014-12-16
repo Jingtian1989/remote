@@ -1,7 +1,6 @@
 package org.remote.common.codec;
 
-import org.remote.common.exception.RemoteCode;
-import org.remote.common.exception.RemoteException;
+import org.remote.common.exception.CodecsException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
@@ -12,7 +11,7 @@ import java.io.ObjectOutputStream;
 public class JavaEncoder implements Encoder {
 
     @Override
-    public byte[] encode(Object object) throws RemoteException {
+    public byte[] encode(Object object) throws CodecsException {
         try {
             ByteArrayOutputStream array = new ByteArrayOutputStream();
             ObjectOutputStream output = new ObjectOutputStream(array);
@@ -21,7 +20,7 @@ public class JavaEncoder implements Encoder {
             output.close();
             return array.toByteArray();
         } catch (Exception e) {
-            throw new RemoteException(RemoteCode.REMOTE_CODECS_ENCODE_FAILED, "encode failed.", e);
+            throw new CodecsException(e);
         }
     }
 }

@@ -2,8 +2,8 @@ package org.remote.common.protocol;
 
 import org.remote.common.codec.Codecs;
 import org.remote.common.domain.BaseResponse;
-import org.remote.common.exception.RemoteException;
 import org.remote.common.buffer.ByteBufferWrapper;
+import org.remote.common.exception.CodecsException;
 
 /**
  * Created by jingtian.zjt on 2014/12/10.
@@ -29,12 +29,12 @@ public class PacketResponse extends BaseResponse{
     }
 
     @Override
-    public void encode(ByteBufferWrapper wrapper) throws RemoteException {
+    public void encode(ByteBufferWrapper wrapper){
         protocol.encode(this, wrapper);
     }
 
     @Override
-    public Object parse() throws RemoteException{
+    public Object parse() throws CodecsException {
         return Codecs.getDecoder(getCodecType()).decode(packet);
     }
 }

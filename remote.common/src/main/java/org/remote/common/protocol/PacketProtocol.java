@@ -2,6 +2,7 @@ package org.remote.common.protocol;
 
 import org.remote.common.buffer.ByteBufferWrapper;
 import org.remote.common.domain.BaseHeader;
+import org.remote.common.exception.CodecsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,29 +11,29 @@ import org.slf4j.LoggerFactory;
  * Created by jingtian.zjt on 2014/12/10.
  */
 /*
- * Packet codecs.
- * 请求：
- * 字节数       描述
- * 1           协议
- * 1           版本
- * 1           请求
- * 1         序列化方式
- * 8          请求ID
- * 4          超时时间
- * 4         数据包长度
- * 不等        数据包
+ * Packet protocol.
+ * request
+ * bytes       fields
+ * 1           protocol
+ * 1           version
+ * 1           request
+ * 1           codecs type
+ * 8           messageID
+ * 4           timeout
+ * 4           data len
+ * len         data
  *
- * 响应：
- * 字节数      描述
- * 1          协议
- * 1          版本
- * 1          响应
- * 1        序列化方式
- * 1        状态code
- * 3        保留字节
- * 8        对应的请求ID
- * 4        数据包长度
- * 不等      数据包
+ * response
+ * bytes      fields
+ * 1          protocol
+ * 1          version
+ * 1          response
+ * 1          codecs type
+ * 1          status code
+ * 3          keep
+ * 8          messageID
+ * 4          data len
+ * len        data
  *
  *
  */
@@ -108,8 +109,8 @@ public class PacketProtocol implements Protocol{
                 throw new RuntimeException("message type " + type + " is not supported");
             }
         } else {
-            LOGGER.error("[REMOTE] unsupported codecs version " + version);
-            throw new RuntimeException("codecs version " + version + "is not supported");
+            LOGGER.error("[REMOTE] unsupported version " + version);
+            throw new RuntimeException("unsupported version " + version);
         }
     }
 

@@ -6,6 +6,6 @@ package org.remote.common.service;
 
 public interface Processor {
 
-    public void handle(Object data, Writer writer);
+    public void handleMessage(Object data, Writer writer);
 
 }

@@ -4,7 +4,6 @@ import org.remote.common.client.ClientCallBack;
 import org.remote.common.domain.BaseHeader;
 import org.remote.common.domain.BaseRequest;
 import org.remote.common.domain.BaseResponse;
-import org.remote.common.exception.RemoteException;
 import org.remote.common.protocol.ProtocolFactory;
 import org.remote.common.protocol.ProtocolService;
 import org.remote.common.server.Connection;
@@ -52,27 +51,25 @@ public class MessageHandler implements Runnable {
 
     private void handleResponse(BaseResponse response, Connection connection) {
         Object data = null;
+        ClientCallBack callBack = connection.getCallBack();
         try {
             data = response.parse();
-        } catch (RemoteException e) {
-            LOGGER.error("[REMOTE] parse response failed. exception:", e);
-            return;
-        }
-        try {
-            ClientCallBack callBack = connection.getCallBack();
             if (callBack != null) {
                 callBack.handleResponse(data);
             }
         } catch (Exception e) {
-            LOGGER.error("[REMOTE] unexpected application exception when handle response message. exception:", e);
+            if (callBack != null) {
+                callBack.handleException(e);
+            }
         }
     }
 
     private void handleRequest(BaseRequest request, Connection connection) {
         Object data = null;
+
         try {
             data = request.parse();
-        } catch (RemoteException e){
+        } catch (Exception e){
             LOGGER.error("[REMOTE] parse request failed. exception:", e);
             BaseResponse response = request.error("parse request failed.");
             connection.write(response);
@@ -86,7 +83,7 @@ public class MessageHandler implements Runnable {
         }
         try {
             ProtocolService protocol = ProtocolFactory.getInstance().getProtocolService(request.getProtocolType());
-            processor.handle(data, new Writer(connection, protocol, request));
+            processor.handleMessage(data, new Writer(connection, protocol, request));
         } catch (Exception e) {
             LOGGER.error("[REMOTE] unexpected application exception when handle request. exception:", e);
             BaseResponse response = request.error("unexpected application exception");

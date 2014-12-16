@@ -9,8 +9,6 @@ import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.util.HashedWheelTimer;
 import org.remote.common.client.BaseClientFactory;
 import org.remote.common.client.Client;
-import org.remote.common.exception.RemoteCode;
-import org.remote.common.exception.RemoteException;
 import org.remote.common.protocol.ProtocolService;
 import org.remote.common.protocol.ProtocolSetting;
 import org.remote.common.service.ProcessorRegistrar;
@@ -21,6 +19,7 @@ import org.remote.netty.server.NettyConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.ConnectException;
 import java.net.SocketAddress;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -30,7 +29,6 @@ import java.util.concurrent.ThreadFactory;
  */
 public class NettyClientFactory extends BaseClientFactory {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(NettyClientFactory.class);
     private final ClientBootstrap bootstrap;
 
     public NettyClientFactory() {
@@ -54,21 +52,18 @@ public class NettyClientFactory extends BaseClientFactory {
     }
 
     @Override
-    public Client connect(SocketAddress address, int timeout, ProtocolService protocol, ProcessorRegistrar registrar) throws RemoteException {
+    public Client connect(SocketAddress address, int timeout, ProtocolService protocol, ProcessorRegistrar registrar) throws ConnectException {
         ChannelFuture future = bootstrap.connect(address);
         future.awaitUninterruptibly(timeout);
         if (!future.isDone()) {
-            LOGGER.error("[REMOTE] connect " + address + " timeout.");
-            throw new RemoteException(RemoteCode.REMOTE_CLIENT_CONN_TIMEOUT, "connect remote timeout.", future.getCause());
+            throw new ConnectException();
         }
         if (!future.isSuccess()) {
-            LOGGER.error("[REMOTE] connect " + address + " failed.");
-            throw new RemoteException(RemoteCode.REMOTE_CLIENT_CONN_FAILED, "connect failed.", future.getCause());
+            throw new ConnectException();
         }
 
         if (!future.getChannel().isConnected()) {
-            LOGGER.error("[REMOTE] channel " + address + " not connected.");
-            throw new RemoteException(RemoteCode.REMOTE_CLIENT_CONN_FAILED, "channel not connected.", future.getCause());
+            throw new ConnectException();
         }
         NettyConnection connection = new NettyConnection(future.getChannel());
         NettyClient client = new NettyClient(connection, protocol, registrar);

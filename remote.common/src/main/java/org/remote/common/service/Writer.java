@@ -4,7 +4,7 @@ import org.remote.common.client.ClientCallBack;
 import org.remote.common.domain.BaseHeader;
 import org.remote.common.domain.BaseRequest;
 import org.remote.common.domain.BaseResponse;
-import org.remote.common.exception.RemoteException;
+import org.remote.common.exception.CodecsException;
 import org.remote.common.protocol.ProtocolService;
 import org.remote.common.server.Connection;
 
@@ -23,13 +23,13 @@ public class Writer {
         this.request = request;
     }
 
-    public void request(Object data, ClientCallBack callBack) throws RemoteException {
+    public void request(Object data, ClientCallBack callBack) throws CodecsException {
         BaseHeader request = protocol.buildRequest(data);
         connection.setCallBack(callBack);
         connection.write(request);
     }
 
-    public void response(Object data) throws RemoteException {
+    public void response(Object data) throws CodecsException {
         BaseResponse response = protocol.buildResponse(request, data);
         connection.write(response);
     }

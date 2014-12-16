@@ -1,7 +1,7 @@
 package org.remote.common.domain;
 
 import org.remote.common.buffer.ByteBufferWrapper;
-import org.remote.common.exception.RemoteException;
+import org.remote.common.exception.CodecsException;
 
 /**
  * Created by jingtian.zjt on 2014/12/3.
@@ -31,8 +31,8 @@ public abstract class BaseHeader {
     }
 
 
-    public abstract void encode(ByteBufferWrapper wrapper) throws RemoteException;
+    public abstract void encode(ByteBufferWrapper wrapper);
 
-    public abstract Object parse() throws RemoteException;
+    public abstract Object parse() throws CodecsException;
 
 }
